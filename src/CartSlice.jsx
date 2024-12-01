@@ -6,19 +6,30 @@ export const CartSlice = createSlice({
     items: [], // Initialize items as an empty array
   },
   reducers: {
+    // Add item to cart
     addItem: (state, action) => {
+      // Check if item already exists in cart
       const existingItem = state.items.find(item => item.name === action.payload.name);
+      
       if (existingItem) {
+        // If item exists, increment quantity
         existingItem.quantity += 1;
       } else {
-        state.items.push(action.payload);
+        // If item doesn't exist, add new item
+        state.items.push({
+          ...action.payload,
+          quantity: 1
+        });
       }
     },
 
+    // Remove item from cart
     removeItem: (state, action) => {
+      // Filter out the item with matching name
       state.items = state.items.filter(item => item.name !== action.payload.name);
     },
 
+    // Update quantity of an item
     updateQuantity: (state, action) => {
       const { name, operation } = action.payload;
       const item = state.items.find(item => item.name === name);
@@ -37,27 +48,20 @@ export const CartSlice = createSlice({
       }
     },
 
-    // Optional: Add a clear cart reducer if needed
+    // Optional: Clear entire cart
     clearCart: (state) => {
       state.items = [];
     },
 
-    // Optional: Add a set quantity reducer if needed
+    // Optional: Set specific quantity
     setQuantity: (state, action) => {
       const { name, quantity } = action.payload;
       const item = state.items.find(item => item.name === name);
-      if (item) {
+      if (item && quantity > 0) {
         item.quantity = quantity;
       }
-    },
-
-    // Optional: Add a calculate total reducer if needed
-    calculateTotal: (state) => {
-      return state.items.reduce((total, item) => {
-        return total + (parseFloat(item.cost) * item.quantity);
-      }, 0);
     }
-  },
+  }
 });
 
 // Export actions
@@ -66,25 +70,45 @@ export const {
   removeItem, 
   updateQuantity, 
   clearCart, 
-  setQuantity, 
-  calculateTotal 
+  setQuantity 
 } = CartSlice.actions;
 
-// Selector to get cart items
+// Selectors
 export const selectCartItems = state => state.cart.items;
 
-// Selector to get cart total
 export const selectCartTotal = state => {
   return state.cart.items.reduce((total, item) => {
-    return total + (parseFloat(item.cost) * item.quantity);
+    return total + (item.cost * item.quantity);
   }, 0);
 };
 
-// Selector to get cart item count
 export const selectCartItemCount = state => {
   return state.cart.items.reduce((count, item) => {
     return count + item.quantity;
   }, 0);
 };
 
+// Export reducer
 export default CartSlice.reducer;
+
+// Optional: Action creators with additional logic
+export const addItemWithValidation = (item) => (dispatch, getState) => {
+  // Add any validation logic here
+  const state = getState();
+  const existingItem = state.cart.items.find(i => i.name === item.name);
+  
+  if (!existingItem) {
+    dispatch(addItem(item));
+  }
+};
+
+// Optional: Thunk for async operations
+export const addItemAsync = (item) => async (dispatch) => {
+  try {
+    // Simulate API call or async operation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    dispatch(addItem(item));
+  } catch (error) {
+    console.error('Error adding item:', error);
+  }
+};

@@ -1,9 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import cartReducer from './CartSlice';
 
- const store = configureStore({
+// Create and configure the Redux store
+const store = configureStore({
+    // Configure reducers
     reducer: {
         cart: cartReducer,
     },
+    // Enable Redux DevTools Extension in development
+    devTools: process.env.NODE_ENV !== 'production',
 });
-export default store
+
+export default store;
